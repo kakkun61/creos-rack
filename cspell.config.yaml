@@ -5,5 +5,6 @@ dictionaryDefinitions: []
 dictionaries: []
 words:
   - BOSL
+  - shiftout
 ignoreWords: []
 import: []
