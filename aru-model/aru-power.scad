@@ -5,7 +5,10 @@ $fn = $preview ? 16 : 64;
 c4004 = 0;
 model_numbers = [ c4004 ];
 
-box_name_index                   = 0;
+function aru_power_c4004() = c4004;
+function aru_power_model_numbers() = model_numbers;
+
+name_index                       = 0;
 box_width_index                  = 1;
 box_length_index                 = 2;
 box_height_index                 = 3;
@@ -65,6 +68,37 @@ data = [
      9.00, // wheel_dent_diameter
   ]
 ];
+
+function aru_power_data(model_number) = data[model_number];
+
+function aru_power_name(model_number) = data[model_number][name_index];
+function aru_power_box_width(model_number) = data[model_number][box_width_index];
+function aru_power_box_length(model_number) = data[model_number][box_length_index];
+function aru_power_box_height(model_number) = data[model_number][box_height_index];
+function aru_power_box_upper_height(model_number) = data[model_number][box_upper_height_index];
+function aru_power_box_lower_length(model_number) = data[model_number][box_lower_length_index];
+function aru_power_axis_base_diameter(model_number) = data[model_number][axis_base_diameter_index];
+function aru_power_axis_base_height(model_number) = data[model_number][axis_base_height_index];
+function aru_power_axis_pin_diameter(model_number) = data[model_number][axis_pin_diameter_index];
+function aru_power_axis_pin_height(model_number) = data[model_number][axis_pin_height_index];
+function aru_power_axis_pin_hole_diameter(model_number) = data[model_number][axis_pin_hole_diameter_index];
+function aru_power_coupler_base_width(model_number) = data[model_number][coupler_base_width_index];
+function aru_power_coupler_base_length(model_number) = data[model_number][coupler_base_length_index];
+function aru_power_coupler_base_height(model_number) = data[model_number][coupler_base_height_index];
+function aru_power_coupler_base_hole_diameter(model_number) = data[model_number][coupler_base_hole_diameter_index];
+function aru_power_coupler_base_hole_offset(model_number) = data[model_number][coupler_base_hole_offset_index];
+function aru_power_wheel_shaft_diameter(model_number) = data[model_number][wheel_shaft_diameter_index];
+function aru_power_wheel_shaft_length(model_number) = data[model_number][wheel_shaft_length_index];
+function aru_power_wheel_shaft_offset_z(model_number) = data[model_number][wheel_shaft_offset_z_index];
+function aru_power_wheel_tire_wide_diameter(model_number) = data[model_number][wheel_tire_wide_diameter_index];
+function aru_power_wheel_tire_narrow_diameter(model_number) = data[model_number][wheel_tire_narrow_diameter_index];
+function aru_power_wheel_tire_height(model_number) = data[model_number][wheel_tire_height_index];
+function aru_power_wheel_flange_diameter(model_number) = data[model_number][wheel_flange_diameter_index];
+function aru_power_wheel_flange_height(model_number) = data[model_number][wheel_flange_height_index];
+function aru_power_box_wheel_gap(model_number) = data[model_number][box_wheel_gap_index];
+function aru_power_wheel_gap(model_number) = data[model_number][wheel_gap_index];
+function aru_power_wheel_dent_depth(model_number) = data[model_number][wheel_dent_depth_index];
+function aru_power_wheel_dent_diameter(model_number) = data[model_number][wheel_dent_diameter_index];
 
 module aru_power_box(
   model_number,
