@@ -6,5 +6,6 @@ dictionaries: []
 words:
   - BOSL
   - shiftout
+  - xrot
 ignoreWords: []
 import: []

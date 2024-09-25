@@ -23,7 +23,16 @@ coupler_base_hole_diameter_index = 14;
 coupler_base_hole_offset_index   = 15;
 wheel_shaft_diameter_index       = 16;
 wheel_shaft_length_index         = 17;
-wheel_shaft_offset_index         = 18;
+wheel_shaft_offset_z_index       = 18;
+wheel_tire_wide_diameter_index   = 19;
+wheel_tire_narrow_diameter_index = 20;
+wheel_tire_height_index          = 21;
+wheel_flange_diameter_index      = 22;
+wheel_flange_height_index        = 23;
+box_wheel_gap_index              = 24;
+wheel_gap_index                  = 25;
+wheel_dent_depth_index           = 26;
+wheel_dent_diameter_index        = 27;
 
 data = [
   [ "アルパワー HO-23B",
@@ -44,7 +53,16 @@ data = [
      1.30, // coupler_base_hole_offset
      1.00, // wheel_shaft_diameter
     12.60, // wheel_shaft_length
-     9.85, // wheel_shaft_offset
+     9.85, // wheel_shaft_offset_z
+    10.60, // wheel_tire_wide_diameter
+    10.30, // wheel_tire_narrow_diameter
+     2.10, // wheel_tire_height
+    12.70, // wheel_flange_diameter
+     0.60, // wheel_flange_height
+     1.00, // box_wheel_gap
+    23.00, // wheel_gap
+     1.50, // wheel_dent_depth
+     9.00, // wheel_dent_diameter
   ]
 ];
 
@@ -125,11 +143,67 @@ module aru_power_coupler_base(
   }
 }
 
-aru_power_box(model_number = c4004) {
-  attach(TOP, BOTTOM)
-    aru_power_axis(model_number = c4004);
-  align(FRONT, TOP, inset = data[c4004][box_upper_height_index])
-    aru_power_coupler_base(model_number = c4004);
-  align(BACK, TOP, inset = data[c4004][box_upper_height_index])
-    aru_power_coupler_base(model_number = c4004, spin = 180);
+module aru_power_wheel(
+  model_number,
+  anchor = CENTER,
+  spin = 0,
+  orient = UP
+) {
+  _ = assert(in_list(model_number, model_numbers), "invalid model number");
+  datum = data[model_number];
+  wheel_tire_narrow_diameter = datum[wheel_tire_narrow_diameter_index];
+  wheel_tire_wide_diameter = datum[wheel_tire_wide_diameter_index];
+  wheel_tire_height = datum[wheel_tire_height_index];
+  wheel_flange_diameter = datum[wheel_flange_diameter_index];
+  wheel_flange_height = datum[wheel_flange_height_index];
+  wheel_dent_diameter = datum[wheel_dent_diameter_index];
+  wheel_dent_depth = datum[wheel_dent_depth_index];
+  attachable(anchor, spin, orient, d1 = wheel_flange_diameter, d2 = wheel_tire_narrow_diameter, l = wheel_tire_height + wheel_flange_height) {
+    up(wheel_flange_height / 2) {
+      diff()
+        cyl(d1 = wheel_tire_wide_diameter, d2 = wheel_tire_narrow_diameter, h = wheel_tire_height) {
+          attach(BOTTOM, TOP)
+            cyl(d = wheel_flange_diameter, h = wheel_flange_height);
+          attach(TOP, TOP, inside = true)
+            cyl(d = wheel_dent_diameter, h = wheel_dent_depth);
+        }
+    }
+    children();
+  }
 }
+
+module aru_power(model_number){
+  _ = assert(in_list(model_number, model_numbers), "invalid model number");
+  aru_power_box(model_number) {
+    datum = data[model_number];
+    box_wheel_gap = datum[box_wheel_gap_index];
+    box_height = datum[box_height_index];
+    wheel_shaft_diameter = datum[wheel_shaft_diameter_index];
+    wheel_shaft_offset_z = datum[wheel_shaft_offset_z_index];
+    wheel_gap = datum[wheel_gap_index];
+    attach(TOP, BOTTOM)
+      aru_power_axis(model_number);
+    align(FRONT, TOP, inset = data[c4004][box_upper_height_index])
+      aru_power_coupler_base(model_number);
+    align(BACK, TOP, inset = data[c4004][box_upper_height_index])
+      aru_power_coupler_base(model_number, spin = 180);
+    fwd(wheel_gap / 2)
+      down(wheel_shaft_offset_z - box_height / 2)
+        attach(RIGHT, BOTTOM, shiftout = box_wheel_gap)
+          aru_power_wheel(model_number);
+    back(wheel_gap / 2)
+      down(wheel_shaft_offset_z - box_height / 2)
+        attach(RIGHT, BOTTOM, shiftout = box_wheel_gap)
+          aru_power_wheel(model_number);
+    fwd(wheel_gap / 2)
+      down(wheel_shaft_offset_z - box_height / 2)
+        attach(LEFT, BOTTOM, shiftout = box_wheel_gap)
+          aru_power_wheel(model_number);
+    back(wheel_gap / 2)
+      down(wheel_shaft_offset_z - box_height / 2)
+        attach(LEFT, BOTTOM, shiftout = box_wheel_gap)
+          aru_power_wheel(model_number);
+  }
+}
+
+aru_power(c4004);
