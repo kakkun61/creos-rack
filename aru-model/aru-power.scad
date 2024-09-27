@@ -36,6 +36,11 @@ box_wheel_gap_index              = 24;
 wheel_gap_index                  = 25;
 wheel_dent_depth_index           = 26;
 wheel_dent_diameter_index        = 27;
+box_contact_pad_gap_index        = 28;
+contact_pad_diameter_index       = 29;
+contact_pad_height_index         = 30;
+contact_pad_hole_diameter_index  = 31;
+contact_pad_offset_index         = 32;
 
 data = [
   [ "アルパワー HO-23B",
@@ -62,10 +67,15 @@ data = [
      2.10, // wheel_tire_height
     12.70, // wheel_flange_diameter
      0.60, // wheel_flange_height
-     1.00, // box_wheel_gap
+     1.75, // box_wheel_gap
     23.00, // wheel_gap
      1.50, // wheel_dent_depth
      9.00, // wheel_dent_diameter
+     0.50, // box_contact_pad_gap
+     3.00, // contact_pad_diameter
+     0.05, // contact_pad_height
+     1.00, // contact_pad_hole_diameter
+     2.00, // contact_pad_offset
   ]
 ];
 
@@ -99,12 +109,17 @@ function aru_power_box_wheel_gap(model_number) = data[model_number][box_wheel_ga
 function aru_power_wheel_gap(model_number) = data[model_number][wheel_gap_index];
 function aru_power_wheel_dent_depth(model_number) = data[model_number][wheel_dent_depth_index];
 function aru_power_wheel_dent_diameter(model_number) = data[model_number][wheel_dent_diameter_index];
+function aru_power_box_contact_pad_gap(model_number) = data[model_number][box_contact_pad_gap_index];
+function aru_power_contact_pad_diameter(model_number) = data[model_number][contact_pad_diameter_index];
+function aru_power_contact_pad_height(model_number) = data[model_number][contact_pad_height_index];
+function aru_power_contact_pad_hole_diameter(model_number) = data[model_number][contact_pad_hole_diameter_index];
+function aru_power_contact_pad_offset(model_number) = data[model_number][contact_pad_offset_index];
 
 module aru_power_box(
   model_number,
-  anchor = CENTER,
-  spin = 0,
-  orient = UP
+  anchor,
+  spin,
+  orient
 ) {
   _ = assert(in_list(model_number, model_numbers), "invalid model number");
   datum = data[model_number];
@@ -129,9 +144,9 @@ module aru_power_box(
 
 module aru_power_axis(
   model_number,
-  anchor = CENTER,
-  spin = 0,
-  orient = UP
+  anchor,
+  spin,
+  orient
 ) {
   _ = assert(in_list(model_number, model_numbers), "invalid model number");
   datum = data[model_number];
@@ -156,9 +171,9 @@ module aru_power_axis(
 
 module aru_power_coupler_base(
   model_number,
-  anchor = CENTER,
-  spin = 0,
-  orient = UP
+  anchor,
+  spin,
+  orient
 ) {
   _ = assert(in_list(model_number, model_numbers), "invalid model number");
   datum = data[model_number];
@@ -179,9 +194,9 @@ module aru_power_coupler_base(
 
 module aru_power_wheel(
   model_number,
-  anchor = CENTER,
-  spin = 0,
-  orient = UP
+  anchor,
+  spin,
+  orient
 ) {
   _ = assert(in_list(model_number, model_numbers), "invalid model number");
   datum = data[model_number];
@@ -206,37 +221,86 @@ module aru_power_wheel(
   }
 }
 
-module aru_power(model_number){
+module aru_power_contact_pad(
+  model_number,
+  anchor,
+  spin,
+  orient
+) {
   _ = assert(in_list(model_number, model_numbers), "invalid model number");
-  aru_power_box(model_number) {
-    datum = data[model_number];
-    box_wheel_gap = datum[box_wheel_gap_index];
-    box_height = datum[box_height_index];
-    wheel_shaft_diameter = datum[wheel_shaft_diameter_index];
-    wheel_shaft_offset_z = datum[wheel_shaft_offset_z_index];
-    wheel_gap = datum[wheel_gap_index];
-    attach(TOP, BOTTOM)
-      aru_power_axis(model_number);
-    align(FRONT, TOP, inset = data[c4004][box_upper_height_index])
-      aru_power_coupler_base(model_number);
-    align(BACK, TOP, inset = data[c4004][box_upper_height_index])
-      aru_power_coupler_base(model_number, spin = 180);
-    fwd(wheel_gap / 2)
-      down(wheel_shaft_offset_z - box_height / 2)
-        attach(RIGHT, BOTTOM, shiftout = box_wheel_gap)
-          aru_power_wheel(model_number);
-    back(wheel_gap / 2)
-      down(wheel_shaft_offset_z - box_height / 2)
-        attach(RIGHT, BOTTOM, shiftout = box_wheel_gap)
-          aru_power_wheel(model_number);
-    fwd(wheel_gap / 2)
-      down(wheel_shaft_offset_z - box_height / 2)
-        attach(LEFT, BOTTOM, shiftout = box_wheel_gap)
-          aru_power_wheel(model_number);
-    back(wheel_gap / 2)
-      down(wheel_shaft_offset_z - box_height / 2)
-        attach(LEFT, BOTTOM, shiftout = box_wheel_gap)
-          aru_power_wheel(model_number);
+  datum = data[model_number];
+  contact_pad_diameter = datum[contact_pad_diameter_index];
+  contact_pad_height = datum[contact_pad_height_index];
+  contact_pad_hole_diameter = datum[contact_pad_hole_diameter_index];
+  attachable(anchor, spin, orient, size = [contact_pad_diameter, contact_pad_diameter, contact_pad_height]) {
+    linear_extrude(contact_pad_height)
+      difference() {
+        union() {
+          circle(d = contact_pad_diameter);
+          fwd(contact_pad_diameter / 4) square([contact_pad_diameter, contact_pad_diameter / 2], center = true);
+        }
+        circle(d = contact_pad_hole_diameter);
+      }
+    children();
+  }
+}
+
+module aru_power(
+  model_number,
+  anchor,
+  spin,
+  orient
+) {
+  _ = assert(in_list(model_number, model_numbers), "invalid model number");
+  datum = data[model_number];
+  upper_size = [
+    datum[box_width_index],
+    datum[box_length_index],
+    datum[box_upper_height_index]
+  ];
+  lower_size = [
+    datum[box_width_index],
+    datum[box_lower_length_index],
+    datum[box_height_index] - datum[box_upper_height_index]
+  ];
+  attachable(anchor, spin, orient, size = [upper_size.x, lower_size.y, upper_size.z + lower_size.z]) {
+    aru_power_box(model_number) {
+      datum = data[model_number];
+      box_wheel_gap = datum[box_wheel_gap_index];
+      box_height = datum[box_height_index];
+      wheel_shaft_diameter = datum[wheel_shaft_diameter_index];
+      wheel_shaft_offset_z = datum[wheel_shaft_offset_z_index];
+      wheel_gap = datum[wheel_gap_index];
+      box_contact_pad_gap = datum[box_contact_pad_gap_index];
+      contact_pad_offset = datum[contact_pad_offset_index];
+      attach(TOP, BOTTOM)
+        aru_power_axis(model_number);
+      attach(FRONT, BACK, align = TOP, inset = data[c4004][box_upper_height_index])
+        aru_power_coupler_base(model_number);
+      attach(BACK, BACK, align = TOP, inset = data[c4004][box_upper_height_index])
+        aru_power_coupler_base(model_number);
+      fwd(wheel_gap / 2)
+        down(wheel_shaft_offset_z - box_height / 2)
+          attach(RIGHT, BOTTOM, shiftout = box_wheel_gap)
+            aru_power_wheel(model_number);
+      back(wheel_gap / 2)
+        down(wheel_shaft_offset_z - box_height / 2)
+          attach(RIGHT, BOTTOM, shiftout = box_wheel_gap)
+            aru_power_wheel(model_number);
+      fwd(wheel_gap / 2)
+        down(wheel_shaft_offset_z - box_height / 2)
+          attach(LEFT, BOTTOM, shiftout = box_wheel_gap)
+            aru_power_wheel(model_number);
+      back(wheel_gap / 2)
+        down(wheel_shaft_offset_z - box_height / 2)
+          attach(LEFT, BOTTOM, shiftout = box_wheel_gap)
+            aru_power_wheel(model_number);
+      down(contact_pad_offset)
+        right(box_contact_pad_gap)
+          attach(RIGHT, FRONT, align = TOP)
+            aru_power_contact_pad(model_number);
+    }
+    children();
   }
 }
 
