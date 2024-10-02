@@ -4,6 +4,7 @@ include <BOSL2/screws.scad>
 use <../aru-model/aru-power.scad>
 
 $fn = $preview ? 16 : 64;
+$slop = 0.125;
 
 scale = 1 / 80;
 plate_width = 2744 * scale;
@@ -28,6 +29,8 @@ bogey_position_z = 4;
 aru_power_model_number = aru_power_c4004();
 
 bogey_hole_diameter = sqrt(aru_power_box_width(aru_power_model_number) ^ 2 + aru_power_box_length(aru_power_model_number) ^ 2) + 2;
+
+gauge_holder_screw_name = "M8x1";
 
 module bogey_hole() {
   intersection() {
@@ -71,7 +74,7 @@ module gauge_holder(
       diff()
         cube(size = size, anchor = anchor, spin = spin, orient = orient) {
           attach(FRONT, TOP, inside = true)
-            screw_hole("M8x1", length = micro_switch_height, tolerance = "6G", thread = true);
+            screw_hole(gauge_holder_screw_name, length = micro_switch_height, thread = true);
           attach(RIGHT, TOP, inside = true, shiftout = 0.01)
             micro_switch();
           attach(TOP, TOP, inside = true, shiftout = 0.01, spin = 90)
@@ -86,14 +89,15 @@ module gauge_holder(
 module gauge_holder_screw() {
   micro_switch_jump_height = 5;
   gauge_plate_height = 1;
-  screw(
-    "M8x1",
-    length = micro_switch_jump_height + gauge_plate_height + micro_switch_height,
+  shoulder_screw(
+    gauge_holder_screw_name,
+    d = 10,
+    length = micro_switch_jump_height + gauge_plate_height,
     thread_len = micro_switch_height,
-    head = "pan",
-    drive = "slot",
-    tolerance = "6e",
-    thread = true
+    head = "socket",
+    drive = "hex",
+    thread = true,
+    anchor = "bot"
   );
 }
 
